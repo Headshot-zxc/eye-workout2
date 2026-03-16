@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+Marker+Gothic&family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Глазной тренер · мягкие цвета · большое поле</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* Максимально мягкий, тёплый фон без резких контрастов */
+            background: #dce8d5;  /* приглушённый зелёно-серый, безопасный для глаз */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .eye-trainer {
+            max-width: 1400px;     /* шире, чтобы дать простор полю с точкой */
+            width: 100%;
+            background: #f2ede4;    /* тёплый кремовый, почти бумажный */
+            border-radius: 56px;
+            padding: 30px;
+            box-shadow: 0 25px 40px -15px #6b7166, 0 8px 15px rgba(255, 250, 235, 0.5) inset;
+            border: 1px solid #ece3d5;
+        }
+
+        .dual-layout {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        /* ----- ЛЕВАЯ ЧАСТЬ: огромное поле для точки ----- */
+        .canvas-zone {
+            flex: 3;               /* занимает больше места */
+            min-width: 600px;       /* даже при сжатии остаётся широким */
+            background: #e5dfd3;    /* очень мягкий бежевый фон */
+            border-radius: 48px;
+            padding: 25px;
+            box-shadow: 0 10px 20px #b9b9a8 inset, 0 15px 25px #8d9b8b40;
+            border: 1px solid #f2ebdd;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding: 0 8px;
+        }
+
+        .canvas-header h2 {
+            color: #5a6b5b;         /* приглушённый тёмно-зелёный, не режет глаз */
+            font-weight: 450;
+            font-size: 1.9rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .soft-badge {
+            background: #bfc9b9;    /* серо-зелёный, малоконтрастный */
+            color: #3b4f3e;
+            padding: 10px 28px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 470;
+            border: 1px solid #e0dccd;
+            box-shadow: none;
+        }
+
+        /* ОСНОВНОЕ ПОЛЕ — ОЧЕНЬ БОЛЬШОЕ, для свободного движения */
+        .dot-playground {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;    /* широкоформатное, просторное поле */
+            background: #cdcaba;      /* мягкий оливково-серый, близкий к цвету бумаги */
+            border-radius: 42px;
+            box-shadow: 0 4px 8px rgba(90, 80, 60, 0.2) inset, 0 20px 30px -12px #626b5b;
+            border: 2px solid #ece1cf;
+            overflow: hidden;
+            cursor: none;
+            touch-action: none;
+        }
+
+        #movingDot {
+            position: absolute;
+            width: 64px;            /* точка чуть крупнее для лёгкого слежения */
+            height: 64px;
+            background: radial-gradient(circle at 35% 35%, #f5cf8c, #bc9b6a);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            left: 50%;
+            top: 50%;
+            box-shadow: 0 12px 25px rgba(50, 40, 20, 0.5), 0 0 0 5px #f2e1c0a0;
+            border: 2px solid #fffbe6;
+            transition: box-shadow 0.2s;
+            pointer-events: none;
+            will-change: left, top;
+            z-index: 25;
+        }
+
+        /* мягкое свечение вокруг точки (почти незаметное, не утомляет) */
+        .dot-glow {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: #e4cfb080;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+            filter: blur(20px);
+        }
+
+        /* ----- ПРАВАЯ ПАНЕЛЬ: мягкие пастельные тона ----- */
+        .settings-panel {
+            flex: 1.2;
+            min-width: 300px;
+            background: #e7e1d4;       /* очень тёплый светлый фон */
+            backdrop-filter: blur(5px);
+            border-radius: 56px;
+            padding: 34px 28px;
+            box-shadow: 0 15px 25px #858e7c4d;
+            border: 1px solid #f6f0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-panel h3 {
+            font-size: 2.0rem;
+            font-weight: 430;
+            color: #5a715e;            /* спокойный зелёный */
+            margin-bottom: 28px;
+            border-left: 6px solid #b7b992;
+            padding-left: 22px;
+        }
+
+        /* Кнопки режимов — приятная пастель */
+        .mode-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .mode-option {
+            background: #f2eee4;
+            border: 2px solid #dad2c0;
+            padding: 16px 22px;
+            border-radius: 120px;
+            font-size: 1.35rem;
+            font-weight: 480;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 6px 10px #abab9540;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: #5b6d5a;
+            backdrop-filter: blur(4px);
+        }
+
+        .mode-option.active {
+            background: #e2cfb5;        /* чуть теплее, но без яркости */
+            border-color: #bda78b;
+            box-shadow: 0 8px 12px #8f8a7840;
+            color: #465d49;
+        }
+
+        .mode-option:hover {
+            background: #e7dac8;
+            border-color: #cab99f;
+        }
+
+        .mode-icon {
+            font-size: 2.2rem;
+            filter: brightness(0.9);    /* приглушаем иконки */
+        }
+
+        /* блок таймера — спокойные оттенки */
+        .timer-section {
+            background: #dbd2c0c0;
+            border-radius: 70px;
+            padding: 28px 22px;
+            margin: 15px 0 20px;
+            border: 1px solid #f0e5d3;
+            box-shadow: inset 0 2px 8px #b4aa99;
+        }
+
+        .big-timer {
+            font-family: 'Courier New', monospace;
+            font-size: 4rem;
+            font-weight: 600;
+            text-align: center;
+            color: #445b46;              /* тёмный, но мягкий зелёный */
+            background: #f2ede1;
+            padding: 10px 10px;
+            border-radius: 70px;
+            margin-bottom: 25px;
+            border: 2px solid #cec5b3;
+            letter-spacing: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .action-btn {
+            background: #f1eadb;
+            border: none;
+            border-radius: 70px;
+            padding: 18px 0;
+            font-size: 1.4rem;
+            font-weight: 550;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 10px #8e927e66;
+            transition: 0.08s;
+            cursor: pointer;
+            color: #526653;
+            border: 1px solid #dfd3bd;
+        }
+
+        .action-btn:active {
+            transform: scale(0.96);
+            background: #e0d9c6;
+        }
+
+        .action-btn.stop-btn {
+            background: #c7bcac;
+            color: #3e5243;
+            border-color: #b8a68f;
+        }
+
+        /* статусбар без ярких индикаторов */
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 24px;
+            background: #dbd1bf;
+            padding: 18px 24px;
+            border-radius: 60px;
+            border: 1px solid #ede3d2;
+        }
+
+        .led-soft {
+            width: 24px;
+            height: 24px;
+            border-radius: 24px;
+            background: #9fa392;        /* нейтральный серо-зелёный */
+            box-shadow: 0 0 6px #9fb0a0;
+            transition: background 0.2s;
+        }
+
+        .led-soft.active-led {
+            background: #c9b27c;        /* приглушённый золотой, не мигает ярко */
+            box-shadow: 0 0 16px #cbae73;
+            animation: soft-pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes soft-pulse {
+            0% { opacity: 0.8; background: #c9b27c; }
+            50% { opacity: 0.5; background: #b89f6a; }
+            100% { opacity: 0.8; background: #c9b27c; }
+        }
+
+        .status-msg {
+            font-size: 1.2rem;
+            color: #3f5545;
+            font-weight: 420;
+        }
+
+        footer {
+            margin-top: 30px;
+            color: #808d7a;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 350;
+        }
+    </style>
+</head>
+<body>
+    <div class="eye-trainer">
+        <div class="dual-layout">
+            <!-- ЛЕВОЕ: ПРОСТОРНОЕ ПОЛЕ -->
+            <div class="canvas-zone">
+                <div class="canvas-header">
+                    <h2>
+                        <span style="font-size:2.2rem;">⚪</span> Пространство для взгляда
+                    </h2>
+                    <div class="soft-badge" id="modeFriendlyLabel">горизонталь</div>
+                </div>
+                <div class="dot-playground" id="playground">
+                    <div id="movingDot"></div>
+                    <div class="dot-glow" id="dotGlow"></div>
+                </div>
+                <div style="text-align: center; margin-top: 18px; color: #667a62; font-weight: 380; font-size:1.1rem;">
+                    🌿 Следи за точкой мягко, без напряжения. Глаза благодарны.
+                </div>
+            </div>
+
+            <!-- ПРАВОЕ: НАСТРОЙКИ -->
+            <div class="settings-panel">
+                <h3>режимы движения</h3>
+                <div class="mode-stack">
+                    <div class="mode-option active" data-mode="horizontal" id="modeHor">
+                        <span class="mode-icon">⬅️ ➡️</span> Горизонталь
+                    </div>
+                    <div class="mode-option" data-mode="vertical" id="modeVer">
+                        <span class="mode-icon">⬆️ ⬇️</span> Вертикаль
+                    </div>
+                    <div class="mode-option" data-mode="circle" id="modeCircle">
+                        <span class="mode-icon">🔄</span> По кругу
+                    </div>
+                    <div class="mode-option" data-mode="diagonal" id="modeDiag">
+                        <span class="mode-icon">⤢</span> Диагональ
+                    </div>
+                    <div class="mode-option" data-mode="random" id="modeRand">
+                        <span class="mode-icon">✨</span> Мягкое случайное
+                    </div>
+                </div>
+
+                <!-- ТАЙМЕР -->
+                <div class="timer-section">
+                    <div class="big-timer" id="timerSoft">30</div>
+                    <div class="button-group">
+                        <button class="action-btn" id="startSoft">▶ старт</button>
+                        <button class="action-btn" id="pauseSoft">⏸ пауза</button>
+                        <button class="action-btn stop-btn" id="stopSoft">⏹ стоп</button>
+                    </div>
+                </div>
+
+                <!-- СТАТУС -->
+                <div class="status-line">
+                    <span class="led-soft" id="softLed"></span>
+                    <span class="status-msg" id="softStatus">Режим выбран, нажмите старт</span>
+                </div>
+            </div>
+        </div>
+        <footer>
+            👁️‍🗨️ делай разминку каждый час • расстояние 60 см • моргай
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            // ---- мягкие цвета, безопасный UI, огромное поле ----
+            const DOT = document.getElementById('movingDot');
+            const GLOW = document.getElementById('dotGlow');
+            const PLAYGROUND = document.getElementById('playground');
+            
+            // состояние
+            let currentMode = 'horizontal';
+            let isMoving = false;
+            let animationRequest = null;
+            let startTimestamp = null;
+            const cycleDuration = 30; // 30 секунд на полный цикл
+            let timerSeconds = 30;
+            let timerInterval = null;
+            let timerActive = false;  // идёт ли обратный отсчёт
+            
+            // элементы интерфейса
+            const modeLabel = document.getElementById('modeFriendlyLabel');
+            const timerDisplay = document.getElementById('timerSoft');
+            const startBtn = document.getElementById('startSoft');
+            const pauseBtn = document.getElementById('pauseSoft');
+            const stopBtn = document.getElementById('stopSoft');
+            const led = document.getElementById('softLed');
+            const statusMsg = document.getElementById('softStatus');
+            
+            // кнопки режимов
+            const modeHor = document.getElementById('modeHor');
+            const modeVer = document.getElementById('modeVer');
+            const modeCircle = document.getElementById('modeCircle');
+            const modeDiag = document.getElementById('modeDiag');
+            const modeRand = document.getElementById('modeRand');
+            
+            // ---- вспомогательные функции обновления позиции (x, y от 0 до 1) ----
+            function setDotPosition(xRatio, yRatio) {
+                const rect = PLAYGROUND.getBoundingClientRect();
+                // небольшой отступ от края (0.05 .. 0.95) чтобы точка не упиралась в бортик
+                const clampedX = Math.min(0.95, Math.max(0.05, xRatio));
+                const clampedY = Math.min(0.95, Math.max(0.05, yRatio));
+                
+                const left = clampedX * rect.width;
+                const top = clampedY * rect.height;
+                
+                DOT.style.left = left + 'px';
+                DOT.style.top = top + 'px';
+                GLOW.style.left = left + 'px';
+                GLOW.style.top = top + 'px';
+            }
+            
+            // ---- анимация в зависимости от режима ----
+            function animate(timestamp) {
+                if (!isMoving) return;
+                if (!startTimestamp) startTimestamp = timestamp;
+                
+                const elapsed = (timestamp - startTimestamp) / 1000; // секунды
+                const progress = (elapsed % cycleDuration) / cycleDuration; // 0..1
+                
+                let x = 0.5, y = 0.5;
+                
+                switch (currentMode) {
+                    case 'horizontal':
+                        x = 0.1 + 0.8 * (0.5 + 0.5 * Math.sin(2 * Math.PI * progress - Math.PI/2));
+                        y = 0.5;
+                        break;
+                    case 'vertical':
+                        y = 0.1 + 0.8 * (0.5 + 0.5 * Math.sin(2 * Math.PI * progress - Math.PI/2));
+                        x = 0.5;
+                        break;
+                    case 'circle': {
+                        const radius = 0.4; // почти вплоть до краёв (0.05..0.95)
+                        const center = 0.5;
+                        const angle = 2 * Math.PI * progress;
+                        x = center + radius * Math.cos(angle);
+                        y = center + radius * Math.sin(angle);
+                        break;
+                    }
+                    case 'diagonal':
+                        // из верхнего левого в правый нижний
+                        x = 0.1 + 0.8 * progress;
+                        y = 0.1 + 0.8 * progress;
+                        break;
+                    case 'random': {
+                        // мягкие, плавные случайные колебания, чтобы не выходить за 0.05..0.95
+                        const t = progress * 2 * Math.PI;
+                        x = 0.5 + 0.35 * Math.sin(t * 1.7) + 0.1 * Math.cos(t * 3.2);
+                        y = 0.5 + 0.35 * Math.cos(t * 1.3) + 0.1 * Math.sin(t * 4.1);
+                        // естественная коррекция
+                        x = Math.min(0.92, Math.max(0.08, x));
+                        y = Math.min(0.92, Math.max(0.08, y));
+                        break;
+                    }
+                }
+                
+                setDotPosition(x, y);
+                animationRequest = requestAnimationFrame(animate);
+            }
+            
+            // ---- управление движением ----
+            function startMovement() {
+                if (isMoving) return;
+                isMoving = true;
+                startTimestamp = null;
+                if (animationRequest) cancelAnimationFrame(animationRequest);
+                animationRequest = requestAnimationFrame(animate);
+                
+                // включаем таймер, если он ещё не активен
+                if (!timerActive) {
+                    startTimer();
+                }
+                updateStatus(`Движение · ${getModeFriendly(currentMode)}`, true);
+            }
+            
+            function pauseMovement() {
+                if (!isMoving) return;
+                isMoving = false;
+                if (animationRequest) {
+                    cancelAnimationFrame(animationRequest);
+                    animationRequest = null;
+                }
+                pauseTimer();
+                updateStatus('Пауза', true);
+            }
+            
+            function stopMovement() {
+                isMoving = false;
+                if (animationRequest) {
+                    cancelAnimationFrame(animationRequest);
+                    animationRequest = null;
+                }
+                stopTimer();
+                setDotPosition(0.5, 0.5);
+                updateStatus('В центре · выберите режим', false);
+            }
+            
+            // ---- таймер (мягкий, 30 секунд) ----
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerActive = true;
+                timerSeconds = 30;
+                timerDisplay.textContent = timerSeconds;
+                
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds -= 1;
+                        timerDisplay.textContent = timerSeconds;
+                    }
+                    if (timerSeconds === 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        timerActive = false;
+                        // автоматически стопорнем движение и вернём в центр
+                        if (isMoving) {
+                            isMoving = false;
+                            if (animationRequest) cancelAnimationFrame(animationRequest);
+                            animationRequest = null;
+                        }
+                        setDotPosition(0.5, 0.5);
+                        updateStatus('Разминка окончена', false);
+                        timerDisplay.textContent = '30'; // сброс для следующего раза
+                    }
+                }, 1000);
+            }
+            
+            function pauseTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerActive = false;
+                }
+            }
+            
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerActive = false;
+                timerSeconds = 30;
+                timerDisplay.textContent = '30';
+            }
+            
+            // ---- смена режима ----
+            function setMode(mode) {
+                currentMode = mode;
+                
+                // обновить классы активности
+                document.querySelectorAll('.mode-option').forEach(btn => btn.classList.remove('active'));
+                if (mode === 'horizontal') modeHor.classList.add('active');
+                if (mode === 'vertical') modeVer.classList.add('active');
+                if (mode === 'circle') modeCircle.classList.add('active');
+                if (mode === 'diagonal') modeDiag.classList.add('active');
+                if (mode === 'random') modeRand.classList.add('active');
+                
+                modeLabel.textContent = getModeFriendly(mode);
+                // если движение не активно — просто обновляем
+                if (!isMoving) {
+                    setDotPosition(0.5, 0.5);
+                }
+                updateStatus(`Режим «${getModeFriendly(mode)}»`, isMoving || timerActive);
+            }
+            
+            function getModeFriendly(mode) {
+                const map = {
+                    horizontal: 'горизонталь',
+                    vertical: 'вертикаль',
+                    circle: 'круг',
+                    diagonal: 'диагональ',
+                    random: 'плавный random'
+                };
+                return map[mode] || mode;
+            }
+            
+            function updateStatus(text, isActive) {
+                statusMsg.textContent = text;
+                if (isActive) {
+                    led.classList.add('active-led');
+                } else {
+                    led.classList.remove('active-led');
+                }
+            }
+            
+            // ---- обработчики ----
+            startBtn.addEventListener('click', () => {
+                startMovement();
+            });
+            
+            pauseBtn.addEventListener('click', () => {
+                pauseMovement();
+            });
+            
+            stopBtn.addEventListener('click', () => {
+                stopMovement();
+            });
+            
+            modeHor.addEventListener('click', () => setMode('horizontal'));
+            modeVer.addEventListener('click', () => setMode('vertical'));
+            modeCircle.addEventListener('click', () => setMode('circle'));
+            modeDiag.addEventListener('click', () => setMode('diagonal'));
+            modeRand.addEventListener('click', () => setMode('random'));
+            
+            // ресайз — оставляем позицию корректной
+            window.addEventListener('resize', () => {
+                if (!isMoving) {
+                    setDotPosition(0.5, 0.5);
+                }
+            });
+            
+            // инициализация: центр
+            setDotPosition(0.5, 0.5);
+            setMode('horizontal');  // установит активный режим, но статус без движения
+            updateStatus('Режим «горизонталь»', false);
+        })();
+    </script>
+</body>
+</html>

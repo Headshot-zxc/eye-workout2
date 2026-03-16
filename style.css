@@ -1,0 +1,294 @@
+/* eye-trainer.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* Максимально мягкий, тёплый фон без резких контрастов */
+    background: #dce8d5;  /* приглушённый зелёно-серый, безопасный для глаз */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 20px;
+    margin: 0;
+}
+
+.eye-trainer {
+    max-width: 1400px;     /* шире, чтобы дать простор полю с точкой */
+    width: 100%;
+    background: #f2ede4;    /* тёплый кремовый, почти бумажный */
+    border-radius: 56px;
+    padding: 30px;
+    box-shadow: 0 25px 40px -15px #6b7166, 0 8px 15px rgba(255, 250, 235, 0.5) inset;
+    border: 1px solid #ece3d5;
+}
+
+.dual-layout {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* ----- ЛЕВАЯ ЧАСТЬ: огромное поле для точки ----- */
+.canvas-zone {
+    flex: 3;               /* занимает больше места */
+    min-width: 600px;       /* даже при сжатии остаётся широким */
+    background: #e5dfd3;    /* очень мягкий бежевый фон */
+    border-radius: 48px;
+    padding: 25px;
+    box-shadow: 0 10px 20px #b9b9a8 inset, 0 15px 25px #8d9b8b40;
+    border: 1px solid #f2ebdd;
+}
+
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 0 8px;
+}
+
+.canvas-header h2 {
+    color: #5a6b5b;         /* приглушённый тёмно-зелёный, не режет глаз */
+    font-weight: 450;
+    font-size: 1.9rem;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.soft-badge {
+    background: #bfc9b9;    /* серо-зелёный, малоконтрастный */
+    color: #3b4f3e;
+    padding: 10px 28px;
+    border-radius: 60px;
+    font-size: 1.2rem;
+    font-weight: 470;
+    border: 1px solid #e0dccd;
+    box-shadow: none;
+}
+
+/* ОСНОВНОЕ ПОЛЕ — ОЧЕНЬ БОЛЬШОЕ, для свободного движения */
+.dot-playground {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;    /* широкоформатное, просторное поле */
+    background: #cdcaba;      /* мягкий оливково-серый, близкий к цвету бумаги */
+    border-radius: 42px;
+    box-shadow: 0 4px 8px rgba(90, 80, 60, 0.2) inset, 0 20px 30px -12px #626b5b;
+    border: 2px solid #ece1cf;
+    overflow: hidden;
+    cursor: none;
+    touch-action: none;
+}
+
+#movingDot {
+    position: absolute;
+    width: 64px;            /* точка чуть крупнее для лёгкого слежения */
+    height: 64px;
+    background: radial-gradient(circle at 35% 35%, #f5cf8c, #bc9b6a);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    box-shadow: 0 12px 25px rgba(50, 40, 20, 0.5), 0 0 0 5px #f2e1c0a0;
+    border: 2px solid #fffbe6;
+    transition: box-shadow 0.2s;
+    pointer-events: none;
+    will-change: left, top;
+    z-index: 25;
+}
+
+/* мягкое свечение вокруг точки (почти незаметное, не утомляет) */
+.dot-glow {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: #e4cfb080;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+    filter: blur(20px);
+}
+
+/* ----- ПРАВАЯ ПАНЕЛЬ: мягкие пастельные тона ----- */
+.settings-panel {
+    flex: 1.2;
+    min-width: 300px;
+    background: #e7e1d4;       /* очень тёплый светлый фон */
+    backdrop-filter: blur(5px);
+    border-radius: 56px;
+    padding: 34px 28px;
+    box-shadow: 0 15px 25px #858e7c4d;
+    border: 1px solid #f6f0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-panel h3 {
+    font-size: 2.0rem;
+    font-weight: 430;
+    color: #5a715e;            /* спокойный зелёный */
+    margin-bottom: 28px;
+    border-left: 6px solid #b7b992;
+    padding-left: 22px;
+}
+
+/* Кнопки режимов — приятная пастель */
+.mode-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 35px;
+}
+
+.mode-option {
+    background: #f2eee4;
+    border: 2px solid #dad2c0;
+    padding: 16px 22px;
+    border-radius: 120px;
+    font-size: 1.35rem;
+    font-weight: 480;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 6px 10px #abab9540;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #5b6d5a;
+    backdrop-filter: blur(4px);
+}
+
+.mode-option.active {
+    background: #e2cfb5;        /* чуть теплее, но без яркости */
+    border-color: #bda78b;
+    box-shadow: 0 8px 12px #8f8a7840;
+    color: #465d49;
+}
+
+.mode-option:hover {
+    background: #e7dac8;
+    border-color: #cab99f;
+}
+
+.mode-icon {
+    font-size: 2.2rem;
+    filter: brightness(0.9);    /* приглушаем иконки */
+}
+
+/* блок таймера — спокойные оттенки */
+.timer-section {
+    background: #dbd2c0c0;
+    border-radius: 70px;
+    padding: 28px 22px;
+    margin: 15px 0 20px;
+    border: 1px solid #f0e5d3;
+    box-shadow: inset 0 2px 8px #b4aa99;
+}
+
+.big-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 4rem;
+    font-weight: 600;
+    text-align: center;
+    color: #445b46;              /* тёмный, но мягкий зелёный */
+    background: #f2ede1;
+    padding: 10px 10px;
+    border-radius: 70px;
+    margin-bottom: 25px;
+    border: 2px solid #cec5b3;
+    letter-spacing: 8px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.action-btn {
+    background: #f1eadb;
+    border: none;
+    border-radius: 70px;
+    padding: 18px 0;
+    font-size: 1.4rem;
+    font-weight: 550;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 8px 10px #8e927e66;
+    transition: 0.08s;
+    cursor: pointer;
+    color: #526653;
+    border: 1px solid #dfd3bd;
+}
+
+.action-btn:active {
+    transform: scale(0.96);
+    background: #e0d9c6;
+}
+
+.action-btn.stop-btn {
+    background: #c7bcac;
+    color: #3e5243;
+    border-color: #b8a68f;
+}
+
+/* статусбар без ярких индикаторов */
+.status-line {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 24px;
+    background: #dbd1bf;
+    padding: 18px 24px;
+    border-radius: 60px;
+    border: 1px solid #ede3d2;
+}
+
+.led-soft {
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: #9fa392;        /* нейтральный серо-зелёный */
+    box-shadow: 0 0 6px #9fb0a0;
+    transition: background 0.2s;
+}
+
+.led-soft.active-led {
+    background: #c9b27c;        /* приглушённый золотой, не мигает ярко */
+    box-shadow: 0 0 16px #cbae73;
+    animation: soft-pulse 2s infinite ease-in-out;
+}
+
+@keyframes soft-pulse {
+    0% { opacity: 0.8; background: #c9b27c; }
+    50% { opacity: 0.5; background: #b89f6a; }
+    100% { opacity: 0.8; background: #c9b27c; }
+}
+
+.status-msg {
+    font-size: 1.2rem;
+    color: #3f5545;
+    font-weight: 420;
+}
+
+footer {
+    margin-top: 30px;
+    color: #808d7a;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 350;
+}
